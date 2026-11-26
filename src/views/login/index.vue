@@ -32,7 +32,7 @@ async function onSubmit() {
   <main class="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#304156] to-[#263445] p-4">
     <div class="w-full max-w-2xl rounded-lg bg-card p-8 shadow-2xl">
       <h1 class="text-center text-2xl font-semibold">權糖</h1>
-      <p class="mb-6 text-center text-sm text-secondary">青瀨顧問 · 作品集展示</p>
+      <p class="mb-6 text-center text-sm text-secondary">墨泉資訊 · 作品集展示</p>
       <form @submit.prevent="onSubmit">
         <label class="mb-3 block text-sm">帳號<input v-model="userName" autocomplete="username" required class="mt-1 w-full rounded border border-line px-3 py-2" /></label>
         <label class="mb-4 block text-sm">密碼<input v-model="password" type="password" autocomplete="current-password" required class="mt-1 w-full rounded border border-line px-3 py-2" /></label>

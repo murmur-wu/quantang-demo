@@ -31,7 +31,7 @@ const accounts = [
         <p class="text-sm opacity-80">個人作品集展示</p>
         <h1 class="mt-1 text-3xl font-semibold">權糖 quantang</h1>
         <p class="mt-3 max-w-2xl leading-relaxed opacity-90">
-          一個小而完整的權限與資料範圍範例。情境是虛構的顧問公司「青瀨顧問」的內部專案板：
+          一個小而完整的權限與資料範圍範例。情境是虛構的顧問公司「墨泉資訊」的內部專案板：
           五種角色登入後，看得到、改得到的專案、任務與工時都不一樣。公司、人名與客戶都是假資料。
         </p>
         <div class="mt-6 flex flex-wrap gap-3">

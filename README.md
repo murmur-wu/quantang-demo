@@ -1,8 +1,8 @@
 # 權糖 quantang（前端）
 
-權糖是個人作品集展示：一個小而完整的權限與資料範圍範例。情境是虛構的顧問公司「青瀨顧問」的內部專案板，五種角色登入後，看得到、改得到的專案、任務與工時都不一樣。公司、人名與客戶都是假資料。
+權糖是個人作品集展示：一個小而完整的權限與資料範圍範例。情境是虛構的顧問公司「墨泉資訊」的內部專案板，五種角色登入後，看得到、改得到的專案、任務與工時都不一樣。公司、人名與客戶都是假資料。
 
-quantang is a portfolio demo of permissions and data scopes. It is set in the fictional consulting company 青瀨顧問 and its internal project board. Different roles can view and modify different projects, tasks, and time entries. This repository contains the frontend; the backend is not public. The live demo is available at https://quantang.heitang.info.
+quantang is a portfolio demo of permissions and data scopes. It is set in the fictional consulting company 墨泉資訊 and its internal project board. Different roles can view and modify different projects, tasks, and time entries. This repository contains the frontend; the backend is not public. The live demo is available at https://quantang.heitang.info.
 
 **線上展示：<https://quantang.heitang.info>**
 
