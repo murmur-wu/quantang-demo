@@ -2,6 +2,8 @@
 
 權糖是個人作品集展示：一個小而完整的權限與資料範圍範例。情境是虛構的顧問公司「青瀨顧問」的內部專案板，五種角色登入後，看得到、改得到的專案、任務與工時都不一樣。公司、人名與客戶都是假資料。
 
+quantang is a portfolio demo of permissions and data scopes. It is set in the fictional consulting company 青瀨顧問 and its internal project board. Different roles can view and modify different projects, tasks, and time entries. This repository contains the frontend; the backend is not public. The live demo is available at https://quantang.heitang.info.
+
 **線上展示：<https://quantang.heitang.info>**
 
 這個 repo 是展示站的前端原始碼。後端（.NET 10、ASP.NET Core、EF Core）不在這裡公開，但權限與資料範圍的判斷都在後端，所以下面的[架構](#架構)與[權限模型](#權限模型)兩節說明它是怎麼做的。
@@ -29,6 +31,15 @@
 
 展示站不保證隨時在線。連不上後端時，頁面上方會顯示「展示主機目前離線」，這不是帳號或密碼錯誤。
 
+## 截圖
+
+截圖將放在 `docs/screenshots/`，以下為建議檔名，目前皆待補：
+
+- `home.png`：首頁（待補）
+- `login.png`：登入頁（待補）
+- `permission-matrix.png`：權限矩陣（待補）
+- `project-list-admin.png`、`project-list-advisor.png`：不同角色的專案列表對照（待補）
+
 ## 架構
 
 ```mermaid
@@ -51,7 +62,7 @@ flowchart LR
 
 - 前端是純靜態網站，沒有伺服器端程式；所有資料都向後端 API 取得
 - 前端只負責顯示。能看到什麼、能改什麼，全部由後端在每一個請求重新判斷
-- 後端以 Docker 容器執行；程式推送後先跑自動化測試，通過才部署，新版沒通過健康檢查就不會換上
+- 前端以靜態網站提供介面，後端提供 API 並負責權限與資料範圍判斷
 
 ### 一個請求在後端經過哪些檢查
 
@@ -146,7 +157,7 @@ erDiagram
 | 參觀訪客 | 讀客戶 | 403 | 沒有 `biz:client:read` |
 | 參觀訪客 | 任何寫入 | 403 | 訪客一律不能寫入 |
 
-這些情境在後端都有對應的自動化測試，測的是實際的 HTTP 請求與狀態碼。
+這些情境在後端都有對應的測試，涵蓋實際的 HTTP 請求與狀態碼。
 
 ### 登入與工作階段
 
@@ -158,11 +169,11 @@ erDiagram
 
 ## 技術棧
 
-- Vue 3（Composition API、`<script setup lang="ts">`）
-- TypeScript、Vite
-- Pinia、Vue Router
-- Tailwind CSS v4
-- axios
+- Vue `^3.5.13`（Composition API、`<script setup lang="ts">`）
+- TypeScript `^5.7.2`、Vite `^6.0.7`
+- Pinia `^3.0.0`、pinia-plugin-persistedstate `^4.2.0`、Vue Router `^4.5.0`
+- Tailwind CSS `^4.0.0`、axios `^1.7.9`
+- 開發工具：@vitejs/plugin-vue `^5.2.1`、@tailwindcss/vite `^4.0.0`、vue-tsc `^3.3.14`
 
 ## 前端做了什麼
 

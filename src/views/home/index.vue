@@ -6,7 +6,7 @@ const stack = [
   ['後端', '.NET 10、ASP.NET Core Web API、EF Core、SQLite'],
   ['前端', 'Vue 3、TypeScript、Vite、Pinia、Tailwind CSS'],
   ['登入', 'HttpOnly cookie 加伺服器端工作階段，前端不保存權杖'],
-  ['部署', '後端以 Docker 容器執行，前端是靜態網站；推送後自動測試與部署'],
+  ['部署', '前端是靜態網站；後端提供 API，負責權限與資料範圍判斷'],
 ]
 const points = [
   ['資料範圍', '同一支列表 API，不同角色拿到不同資料。過濾寫在資料庫查詢裡，不是先全部取回再丟掉。'],
