@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* ===== 主題 token(Tailwind v4):class 如 bg-primary、text-secondary 皆映射到執行期 CSS 變數 ===== */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-info: var(--info);
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-body: var(--body);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-main: var(--t-main);
+  --color-secondary: var(--t-secondary);
+  --color-disabled: var(--t-disabled);
+}
+
+/* ===== 亮色(預設)===== */
+:root {
+  --primary: #409eff;
+  --info: #409eff;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --primary-hover: color-mix(in srgb, var(--primary) 85%, black);
+  --success-hover: color-mix(in srgb, var(--success) 85%, black);
+  --warning-hover: color-mix(in srgb, var(--warning) 85%, black);
+  --danger-hover: color-mix(in srgb, var(--danger) 85%, black);
+
+  --body: #f0f2f5;
+  --card: #ffffff;
+  --muted: #f9fafb;
+  --line: #e5e7eb;
+  --t-main: #1f2937;
+  --t-secondary: #4b5563;
+  --t-disabled: #9ca3af;
+
+  --radius: 4px;
+  --sidebar-w: 210px;
+}
+
+/* ===== 暗色(theme store 切換 html.dark)===== */
+.dark {
+  --body: #101014;
+  --card: #1c1c21;
+  --muted: #26262b;
+  --line: #34343a;
+  --t-main: #e5e7eb;
+  --t-secondary: #a1a1aa;
+  --t-disabled: #52525b;
+}
+
+/* 灰色模式 / 色弱模式 */
+html.gray { filter: grayscale(100%); }
+html.weak { filter: invert(80%); }
+
+/* 主題圓角:統一套用於互動元素與 .rounded */
+button, input, select, textarea { border-radius: var(--radius); }
+.rounded { border-radius: var(--radius); }
+
+body {
+  font-family: "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--body);
+  color: var(--t-main);
+}
