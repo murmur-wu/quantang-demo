@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../../api'
 import { useAuthStore } from '../../stores/auth'
+import { sessionExpiredKey, strings } from '../../strings'
+import { message } from '../../utils/message'
 const router = useRouter()
 const auth = useAuthStore()
 const userName = ref('')
 const password = ref('')
 const loading = ref(false)
+onMounted(() => {
+  if (sessionStorage.getItem(sessionExpiredKey)) {
+    sessionStorage.removeItem(sessionExpiredKey)
+    message(strings.sessionExpired, 'error')
+  }
+})
 // 帳號、姓名、角色、可看範圍的一句話。點一列只會帶入帳號,密碼一律自己輸入。
 const accounts = [
   ['admin@quantang.demo', '方序', '站台管理員', '全部專案、帳號與權限矩陣'],

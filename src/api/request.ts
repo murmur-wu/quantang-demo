@@ -2,6 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { message } from '../utils/message'
 import { connection } from '../utils/connection'
+import { sessionExpiredKey, strings } from '../strings'
 
 /** 統一 API 封裝：攜帶 cookie、解包回應並處理授權錯誤。 */
 const baseURL = (import.meta.env.VITE_API_BASE || '/api').replace(/\/$/, '')
@@ -54,8 +55,14 @@ instance.interceptors.response.use(
     connection.offline = false
     if (err.response?.status === 401) {
       useAuthStore().logout()
-      if (location.pathname !== '/login') location.href = '/login'
-      else message('帳號或密碼錯誤，或工作階段已失效', 'error')
+      if (err.config?.url?.split('?')[0].replace(/\/$/, '').endsWith('/auth/login')) {
+        message(strings.loginFailed, 'error')
+      } else if (location.pathname !== '/login') {
+        sessionStorage.setItem(sessionExpiredKey, '1')
+        location.href = '/login'
+      } else {
+        message(strings.sessionExpired, 'error')
+      }
       return Promise.reject(err)
     }
     if (err.response?.status === 403) {

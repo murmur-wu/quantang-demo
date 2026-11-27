@@ -1,6 +1,7 @@
 <script setup lang="ts">
-// 主題配置抽屜(參考 SoybeanAdmin):設定即時套用並自動儲存到後端(每位使用者各自一份)
+// 主題設定抽屜:設定即時套用並自動儲存到後端(每位使用者各自一份)
 import { useThemeStore, type ThemeSettings } from '../stores/theme'
+import { strings } from '../strings'
 import Switch from './Switch.vue'
 
 defineProps<{ show: boolean }>()
@@ -32,7 +33,7 @@ function setNum(key: 'radius' | 'sidebarWidth' | 'footerHeight', delta: number, 
       <div class="absolute inset-0 bg-black/40" @click="emit('close')"></div>
       <aside class="absolute right-0 top-0 flex h-full w-[330px] flex-col bg-card shadow-2xl">
         <div class="flex items-center justify-between border-b border-line px-5 py-4">
-          <h4 class="text-[15px] font-semibold">主題配置</h4>
+          <h4 class="text-[15px] font-semibold">{{ strings.themeSettings }}</h4>
           <button class="text-disabled hover:text-secondary" @click="emit('close')">✕</button>
         </div>
 
@@ -83,7 +84,7 @@ function setNum(key: 'radius' | 'sidebarWidth' | 'footerHeight', delta: number, 
               </div>
               <div class="flex items-center justify-between">
                 <span class="flex items-center gap-1.5">
-                  信息色
+                  {{ strings.infoColor }}
                   <label class="flex items-center gap-1 text-secondary">
                     <input type="checkbox" class="accent-primary" :checked="theme.s.infoFollow" @change="theme.set({ infoFollow: ($event.target as HTMLInputElement).checked })" /> 跟隨主色
                   </label>
@@ -118,10 +119,10 @@ function setNum(key: 'radius' | 'sidebarWidth' | 'footerHeight', delta: number, 
             </div>
           </section>
 
-          <!-- 佈局設置 -->
+          <!-- 佈局設定 -->
           <section>
             <div class="mb-3 flex items-center gap-3 text-secondary">
-              <span class="h-px flex-1 bg-line"></span>佈局設置<span class="h-px flex-1 bg-line"></span>
+              <span class="h-px flex-1 bg-line"></span>{{ strings.layoutSettings }}<span class="h-px flex-1 bg-line"></span>
             </div>
             <div class="space-y-3">
               <div class="flex items-center justify-between">

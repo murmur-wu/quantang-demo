@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import ThemeDrawer from '../components/ThemeDrawer.vue'
 import request from '../api/request'
+import { strings } from '../strings'
 import { logout as logoutRequest, type MenuNode } from '../api'
 
 const auth = useAuthStore()
@@ -27,7 +28,7 @@ function fullPath(m: MenuNode, parent: string): string {
   return m.path ? `${parent}/${m.path}` : parent
 }
 
-/** 側欄樣式:深色(prototype 預設)或亮色,由主題配置切換 */
+/** 側欄樣式:深色(prototype 預設)或亮色,由主題設定切換 */
 const sidebarClass = () => (theme.s.darkSidebar ? 'bg-[#304156] text-[#bfcbd9]' : 'border-r border-line bg-card text-secondary')
 const logoClass = () => (theme.s.darkSidebar ? 'bg-[#2b3a4d] text-white' : 'border-b border-line text-main')
 const itemHover = () => (theme.s.darkSidebar ? 'hover:bg-[#263445] hover:text-white' : 'hover:bg-muted hover:text-main')
@@ -113,8 +114,8 @@ async function logout() {
           <b class="font-medium text-main">{{ route.meta.title ?? '工作台' }}</b>
         </div>
         <div class="flex items-center gap-4">
-          <!-- 主題配置 -->
-          <button class="text-lg text-secondary hover:text-primary" title="主題配置" @click="showTheme = true">🎨</button>
+          <!-- 主題設定 -->
+          <button class="text-lg text-secondary hover:text-primary" :title="strings.themeSettings" @click="showTheme = true">🎨</button>
           <div ref="userMenuRef" class="relative">
             <div class="flex cursor-pointer items-center gap-2.5" @click="showUserMenu = !showUserMenu">
               <div class="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-primary font-semibold text-white">
@@ -130,7 +131,7 @@ async function logout() {
                 <span>👤</span> 個人中心
               </button>
               <button class="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[13px] text-main hover:bg-muted" @click="logout">
-                <span>⎋</span> 退出登錄
+                <span>⎋</span> {{ strings.logout }}
               </button>
             </div>
           </div>
@@ -141,7 +142,7 @@ async function logout() {
         <router-view />
       </main>
 
-      <!-- 底部(主題配置可開關) -->
+      <!-- 底部(主題設定可開關) -->
       <footer
         v-if="theme.s.showFooter"
         class="flex items-center justify-center border-t border-line bg-card text-xs text-disabled"
