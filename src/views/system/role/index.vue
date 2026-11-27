@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { roleLabel } from '../../../i18n/labels'
+import { formatDate } from '../../../i18n/format'
+import { useConfirm } from '../../../utils/confirm'
+import { useI18n } from 'vue-i18n'
+
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
   listRoles, createRole, updateRole, deleteRole, getRoleMenuIds, assignRoleMenus,
@@ -10,6 +15,8 @@ import Pagination from '../../../components/Pagination.vue'
 import MenuTreePanel from '../../../components/MenuTreePanel.vue'
 import { buildTree, type TreeNode } from '../../../utils/tree'
 import { message } from '../../../utils/message'
+
+const { t } = useI18n()
 
 const query = reactive({ roleName: '', roleKey: '', status: '', pageNum: 1, pageSize: 10 })
 const rows = ref<any[]>([])
@@ -76,7 +83,7 @@ async function save() {
   const payload = { ...form, menuIds: editMenuIds.value }
   if (editId.value === null) await createRole(payload)
   else await updateRole(editId.value, payload)
-  message('儲存成功')
+  message(t('system.saved'))
   showEdit.value = false
   await load()
 }
@@ -88,7 +95,7 @@ async function toggleStatus(row: any) {
     roleName: row.roleName, roleKey: row.roleKey, roleSort: row.roleSort,
     status: row.status === '0' ? '1' : '0', remark: row.remark, menuIds,
   })
-  message('狀態已更新')
+  message(t('system.statusUpdated'))
   await load()
 }
 
@@ -104,16 +111,16 @@ async function openPerm(row: any) {
 }
 async function savePerm() {
   await assignRoleMenus(permRole.value.roleId, [...permChecked.value])
-  message('權限已更新(使用者需重新登入生效)')
+  message(t('system.permissionsUpdated'))
   showPerm.value = false
 }
 
 // ---- 刪除 / 匯出 ----
 async function onDelete(ids: number[]) {
   if (!ids.length) return
-  if (!confirm(`確定刪除選取的 ${ids.length} 筆角色嗎?`)) return
+  if (!await useConfirm(t('confirm.deleteRoles', { count: ids.length }))) return
   for (const id of ids) await deleteRole(id)
-  message('刪除成功')
+  message(t('system.deleted'))
   await load()
 }
 
@@ -128,35 +135,35 @@ function goPage(p: number) {
     <!-- 搜尋列 -->
     <div class="mb-4 flex flex-wrap items-center gap-3">
       <label class="flex items-center gap-2 text-[13px] text-secondary">
-        角色名稱 <input v-model="query.roleName" type="text" placeholder="請輸入角色名稱" class="w-44 rounded border border-line px-3 py-2 outline-none focus:border-primary" />
+        {{ t('system.roleName') }} <input v-model="query.roleName" type="text" :placeholder="t('system.enterRoleName')" class="w-44 rounded border border-line px-3 py-2 outline-none focus:border-primary" />
       </label>
       <label class="flex items-center gap-2 text-[13px] text-secondary">
-        權限字元 <input v-model="query.roleKey" type="text" placeholder="請輸入權限字元" class="w-44 rounded border border-line px-3 py-2 outline-none focus:border-primary" />
+        {{ t('system.roleKey') }} <input v-model="query.roleKey" type="text" :placeholder="t('system.enterRoleKey')" class="w-44 rounded border border-line px-3 py-2 outline-none focus:border-primary" />
       </label>
       <label class="flex items-center gap-2 text-[13px] text-secondary">
-        狀態
+        {{ t('system.status') }}
         <select v-model="query.status" class="rounded border border-line px-3 py-2 outline-none focus:border-primary">
-          <option value="">全部</option><option value="0">啟用</option><option value="1">停用</option>
+          <option value="">{{ t('system.all') }}</option><option value="0">{{ t('system.enabled') }}</option><option value="1">{{ t('system.disabled') }}</option>
         </select>
       </label>
-      <button class="rounded bg-primary px-3 py-2 text-xs text-white hover:bg-primary-hover" @click="goPage(1)">🔍 搜尋</button>
-      <button class="rounded border border-line px-3 py-2 text-xs text-secondary hover:border-primary hover:bg-muted hover:text-primary" @click="resetQuery">重設</button>
+      <button class="rounded bg-primary px-3 py-2 text-xs text-white hover:bg-primary-hover" @click="goPage(1)">🔍 {{ t('system.search') }}</button>
+      <button class="rounded border border-line px-3 py-2 text-xs text-secondary hover:border-primary hover:bg-muted hover:text-primary" @click="resetQuery">{{ t('system.reset') }}</button>
     </div>
 
     <!-- 工具列 -->
     <div class="mb-4 flex gap-2">
-      <button v-perm="'system:role:add'" class="rounded bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary-hover" @click="openCreate">＋ 新增</button>
-      <button v-perm="'system:role:remove'" :disabled="!selected.size" class="rounded bg-danger px-3 py-1.5 text-xs text-white hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-50" @click="onDelete([...selected])">🗑 刪除</button>
+      <button v-perm="'system:role:add'" class="rounded bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary-hover" @click="openCreate">＋ {{ t('system.add') }}</button>
+      <button v-perm="'system:role:remove'" :disabled="!selected.size" class="rounded bg-danger px-3 py-1.5 text-xs text-white hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-50" @click="onDelete([...selected])">🗑 {{ t('system.delete') }}</button>
     </div>
 
     <table class="w-full text-[13px]">
       <thead>
         <tr class="bg-muted text-left text-secondary">
           <th class="w-8 px-2.5 py-3"><input type="checkbox" class="accent-primary" :checked="allChecked" @change="toggleAll(($event.target as HTMLInputElement).checked)" /></th>
-          <th class="px-2.5 py-3 font-medium">角色編號</th><th class="px-2.5 py-3 font-medium">角色名稱</th>
-          <th class="px-2.5 py-3 font-medium">權限字元</th><th class="px-2.5 py-3 font-medium">顯示順序</th>
-          <th class="px-2.5 py-3 font-medium">狀態</th><th class="px-2.5 py-3 font-medium">建立時間</th>
-          <th class="px-2.5 py-3 font-medium">操作</th>
+          <th class="px-2.5 py-3 font-medium">{{ t('system.roleId') }}</th><th class="px-2.5 py-3 font-medium">{{ t('system.roleName') }}</th>
+          <th class="px-2.5 py-3 font-medium">{{ t('system.roleKey') }}</th><th class="px-2.5 py-3 font-medium">{{ t('system.sortOrder') }}</th>
+          <th class="px-2.5 py-3 font-medium">{{ t('system.status') }}</th><th class="px-2.5 py-3 font-medium">{{ t('system.createdAt') }}</th>
+          <th class="px-2.5 py-3 font-medium">{{ t('system.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -165,7 +172,7 @@ function goPage(p: number) {
             <input type="checkbox" class="accent-primary" :disabled="row.roleKey === 'site_admin'" :checked="selected.has(row.roleId)" @change="toggleOne(row.roleId)" />
           </td>
           <td class="px-2.5 py-3">{{ row.roleId }}</td>
-          <td class="px-2.5 py-3">{{ row.roleName }}</td>
+          <td class="px-2.5 py-3">{{ roleLabel(row.roleKey, row.roleName) }}</td>
           <td class="px-2.5 py-3">
             <span class="rounded border px-1.5 py-0.5 text-xs" :class="row.roleKey === 'site_admin' ? 'border-[color-mix(in_srgb,var(--danger)_35%,transparent)] bg-[color-mix(in_srgb,var(--danger)_12%,transparent)] text-danger' : 'border-[color-mix(in_srgb,var(--info)_35%,transparent)] bg-[color-mix(in_srgb,var(--info)_12%,transparent)] text-info'">{{ row.roleKey }}</span>
           </td>
@@ -173,56 +180,56 @@ function goPage(p: number) {
           <td class="px-2.5 py-3">
             <Switch :on="row.status === '0'" :disabled="row.roleKey === 'site_admin'" @toggle="toggleStatus(row)" />
           </td>
-          <td class="px-2.5 py-3">{{ row.createTime?.slice(0, 10) }}</td>
+          <td class="px-2.5 py-3">{{ row.createTime ? formatDate(row.createTime) : '' }}</td>
           <td class="px-2.5 py-3 whitespace-nowrap">
             <template v-if="row.roleKey !== 'site_admin'">
-              <button v-perm="'system:role:edit'" class="px-1.5 text-primary hover:underline" @click="openUpdate(row)">修改</button>
-              <button v-perm="'system:role:edit'" class="px-1.5 text-primary hover:underline" @click="openPerm(row)">權限設定</button>
-              <button v-perm="'system:role:remove'" class="px-1.5 text-danger hover:underline" @click="onDelete([row.roleId])">刪除</button>
+              <button v-perm="'system:role:edit'" class="px-1.5 text-primary hover:underline" @click="openUpdate(row)">{{ t('system.edit') }}</button>
+              <button v-perm="'system:role:edit'" class="px-1.5 text-primary hover:underline" @click="openPerm(row)">{{ t('system.permissions') }}</button>
+              <button v-perm="'system:role:remove'" class="px-1.5 text-danger hover:underline" @click="onDelete([row.roleId])">{{ t('system.delete') }}</button>
             </template>
             <template v-else>
-              <button class="cursor-not-allowed px-1.5 text-disabled" disabled>修改</button>
-              <button class="cursor-not-allowed px-1.5 text-disabled" disabled>權限設定</button>
+              <button class="cursor-not-allowed px-1.5 text-disabled" disabled>{{ t('system.edit') }}</button>
+              <button class="cursor-not-allowed px-1.5 text-disabled" disabled>{{ t('system.permissions') }}</button>
             </template>
           </td>
         </tr>
-        <tr v-if="!rows.length"><td colspan="8" class="py-10 text-center text-disabled">無資料</td></tr>
+        <tr v-if="!rows.length"><td colspan="8" class="py-10 text-center text-disabled">{{ t('system.noData') }}</td></tr>
       </tbody>
     </table>
 
     <Pagination :total="total" :page-num="query.pageNum" :page-size="query.pageSize" @change="goPage" />
 
     <!-- 新增/修改角色 Modal(照 prototype:不含權限樹) -->
-    <Modal :show="showEdit" :title="editId === null ? '新增角色' : '修改角色'" @close="showEdit = false" @confirm="save">
+    <Modal :show="showEdit" :title="editId === null ? t('system.addRole') : t('system.editRole')" @close="showEdit = false" @confirm="save">
       <div class="grid grid-cols-2 gap-4 text-[13px]">
         <div>
-          <label class="mb-1.5 block text-secondary"><span class="text-danger">*</span> 角色名稱</label>
-          <input v-model="form.roleName" type="text" placeholder="請輸入角色名稱" class="w-full rounded border border-line px-3 py-2 outline-none focus:border-primary" />
+          <label class="mb-1.5 block text-secondary"><span class="text-danger">*</span> {{ t('system.roleName') }}</label>
+          <input v-model="form.roleName" type="text" :placeholder="t('system.enterRoleName')" class="w-full rounded border border-line px-3 py-2 outline-none focus:border-primary" />
         </div>
         <div>
-          <label class="mb-1.5 block text-secondary"><span class="text-danger">*</span> 權限字元</label>
-          <input v-model="form.roleKey" type="text" placeholder="例如: manager" class="w-full rounded border border-line px-3 py-2 outline-none focus:border-primary" />
+          <label class="mb-1.5 block text-secondary"><span class="text-danger">*</span> {{ t('system.roleKey') }}</label>
+          <input v-model="form.roleKey" type="text" :placeholder="t('system.roleKeyExample')" class="w-full rounded border border-line px-3 py-2 outline-none focus:border-primary" />
         </div>
         <div>
-          <label class="mb-1.5 block text-secondary">顯示順序</label>
+          <label class="mb-1.5 block text-secondary">{{ t('system.sortOrder') }}</label>
           <input v-model.number="form.roleSort" type="number" class="w-full rounded border border-line px-3 py-2 outline-none focus:border-primary" />
         </div>
         <div>
-          <label class="mb-1.5 block text-secondary">狀態</label>
+          <label class="mb-1.5 block text-secondary">{{ t('system.status') }}</label>
           <div class="flex gap-4 pt-2">
-            <label class="flex items-center gap-1.5"><input v-model="form.status" type="radio" value="0" class="accent-primary" /> 啟用</label>
-            <label class="flex items-center gap-1.5"><input v-model="form.status" type="radio" value="1" class="accent-primary" /> 停用</label>
+            <label class="flex items-center gap-1.5"><input v-model="form.status" type="radio" value="0" class="accent-primary" /> {{ t('system.enabled') }}</label>
+            <label class="flex items-center gap-1.5"><input v-model="form.status" type="radio" value="1" class="accent-primary" /> {{ t('system.disabled') }}</label>
           </div>
         </div>
         <div class="col-span-2">
-          <label class="mb-1.5 block text-secondary">備註</label>
-          <textarea v-model="form.remark" placeholder="請輸入備註" class="min-h-[70px] w-full rounded border border-line px-3 py-2 outline-none focus:border-primary"></textarea>
+          <label class="mb-1.5 block text-secondary">{{ t('system.remark') }}</label>
+          <textarea v-model="form.remark" :placeholder="t('system.enterRemark')" class="min-h-[70px] w-full rounded border border-line px-3 py-2 outline-none focus:border-primary"></textarea>
         </div>
       </div>
     </Modal>
 
     <!-- 權限設定 Modal:選單權限樹(照 prototype) -->
-    <Modal :show="showPerm" :title="`權限設定 — ${permRole?.roleName ?? ''}`" width="520px" @close="showPerm = false" @confirm="savePerm">
+    <Modal :show="showPerm" :title="t('system.permissionsTitle', { name: permRole ? roleLabel(permRole.roleKey, permRole.roleName) : '' })" width="520px" @close="showPerm = false" @confirm="savePerm">
       <MenuTreePanel :nodes="menuTree" :checked="permChecked" />
     </Modal>
   </div>

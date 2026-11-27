@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { menuLabel } from '../i18n/labels'
 // 遞迴選單權限樹節點(照 prototype/roles.html 權限設定樣式)
 import type { SysMenu } from '../api'
 import type { TreeNode } from '../utils/tree'
@@ -64,9 +65,9 @@ function isIndeterminate(node: TreeNode<SysMenu>): boolean {
           <span
             v-if="node.data.menuType === 'F'"
             class="rounded border border-line bg-muted px-2 py-0.5 text-[12px] text-secondary"
-          >按鈕</span>
+          >{{ $t('tree.button') }}</span>
           <span v-else-if="node.data.parentId === 0">{{ icons[node.data.icon ?? ''] ?? '' }}</span>
-          {{ node.data.menuName }}
+          {{ menuLabel(node.data) }}
         </label>
       </div>
       <div v-if="node.children.length && expanded.has(node.data.menuId)" class="pl-[22px]">

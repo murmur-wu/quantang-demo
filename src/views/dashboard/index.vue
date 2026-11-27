@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { roleLabel, scopeLabel } from '../../i18n/labels'
+import { formatDate, formatNumber } from '../../i18n/format'
+import { formatDateTime } from '../../i18n/format'
+import { useI18n } from 'vue-i18n'
 import { computed, onMounted, ref } from 'vue'
 import request from '../../api/request'
 import { useAuthStore } from '../../stores/auth'
@@ -6,6 +10,7 @@ import { listUsers, listRoles } from '../../api'
 import { strings } from '../../strings'
 
 // 工作台:自己權限範圍內的專案與待辦摘要。所有列表都已由後端依資料範圍過濾,這裡只做加總與顯示。
+const { t } = useI18n()
 const auth = useAuthStore()
 type Project = { id: number; name: string; clientId: number | null }
 type Task = { id: number; projectId: number; name: string }
@@ -18,19 +23,12 @@ const admin = ref<{ users: number; roles: number } | null>(null)
 const loaded = ref(false)
 const loadFailed = ref(false)
 
-const scopeText: Record<string, string> = {
-  all: '全部專案',
-  group: '所屬業務組的專案',
-  owned_or_assigned: '自己負責或被指派的專案',
-  assigned: '被指派的專案',
-  public_demo: '公開示範專案（唯讀）',
-}
-const scopes = computed(() => auth.dataScopes.map(s => scopeText[s] ?? s).join('、') || '沒有可用的資料範圍')
+const scopes = computed(() => auth.dataScopes.map(s => scopeLabel(s)).join(', ') || t('public.noScope'))
 const canTime = computed(() => auth.hasPerm('biz:timeEntry:read'))
 const myEntries = computed(() => entries.value.filter(e => e.userId === auth.user?.userId))
 const myHours = computed(() => myEntries.value.reduce((sum, e) => sum + Number(e.hours), 0))
 const taskCount = (projectId: number) => tasks.value.filter(t => t.projectId === projectId).length
-const taskName = (id: number) => tasks.value.find(t => t.id === id)?.name ?? `任務 ${id}`
+const taskName = (id: number) => tasks.value.find(t => t.id === id)?.name ?? t('public.taskFallback', { id })
 const recent = computed(() => [...myEntries.value].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id).slice(0, 5))
 
 onMounted(async () => {
@@ -53,49 +51,49 @@ onMounted(async () => {
 <template>
   <div class="space-y-5">
     <section class="rounded bg-card p-5 shadow-sm">
-      <h1 class="text-lg font-semibold">{{ auth.user?.nickName }}，你好</h1>
+      <h1 class="text-lg font-semibold">{{ t('public.greeting', { name: auth.user?.nickName ?? '' }) }}</h1>
       <p class="mt-1 text-secondary">
-        角色：{{ auth.roleNames.join('、') || '未指派' }} · 業務組：{{ auth.user?.deptName ?? '不隸屬業務組' }} · 資料範圍：{{ scopes }}
+        {{ t('public.roleLine', { roles: auth.roleNames.map((name, i) => roleLabel(auth.roles.length === auth.roleNames.length ? auth.roles[i] : undefined, name)).join(', ') || t('public.unassigned'), dept: auth.user?.deptName ?? t('public.noDept'), scopes }) }}
       </p>
-      <p class="mt-2 text-xs text-disabled">下次示範資料重置：{{ nextReset ? new Date(nextReset).toLocaleString() : '未排程' }}。重置後所有修改會還原。</p>
+      <p class="mt-2 text-xs text-disabled">{{ t('public.resetInfo', { time: nextReset ? formatDateTime(nextReset) + ' (UTC+8)' : t('common.unscheduled') }) }}</p>
     </section>
 
     <p v-if="!loaded || loadFailed" role="status" class="text-secondary">{{ loadFailed ? strings.loadFailed : strings.loading }}</p>
     <section class="grid grid-cols-2 gap-5 lg:grid-cols-4">
-      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? projects.length : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">範圍內專案</div></div>
-      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? tasks.length : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">範圍內任務</div></div>
-      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed && canTime ? myHours : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ !loaded || loadFailed ? strings.loadingPlaceholder : canTime ? strings.myHours(myEntries.length) : '沒有工時讀取權限' }}</div></div>
-      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? clientCount ?? strings.loadingPlaceholder : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ !loaded || loadFailed ? strings.loadingPlaceholder : clientCount === null ? '沒有客戶讀取權限' : '範圍內客戶' }}</div></div>
+      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? formatNumber(projects.length) : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ t('public.projectsInScope') }}</div></div>
+      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? formatNumber(tasks.length) : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ t('public.tasksInScope') }}</div></div>
+      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed && canTime ? formatNumber(myHours) : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ !loaded || loadFailed ? strings.loadingPlaceholder : canTime ? t('common.myHours', { count: formatNumber(myEntries.length) }) : t('public.noTimeAccess') }}</div></div>
+      <div class="rounded bg-card p-5 shadow-sm"><div class="text-[22px] font-bold">{{ loaded && !loadFailed ? clientCount === null ? strings.loadingPlaceholder : formatNumber(clientCount) : strings.loadingPlaceholder }}</div><div class="text-[13px] text-disabled">{{ !loaded || loadFailed ? strings.loadingPlaceholder : clientCount === null ? t('public.noClientAccess') : t('public.clientsInScope') }}</div></div>
     </section>
 
     <section class="rounded bg-card p-5 shadow-sm">
-      <h2 class="mb-3 text-[15px] font-semibold">我的專案</h2>
+      <h2 class="mb-3 text-[15px] font-semibold">{{ t('public.myProjects') }}</h2>
       <table class="w-full text-left text-[13px]">
-        <thead><tr class="bg-muted text-secondary"><th class="px-2.5 py-3 font-medium">專案</th><th class="px-2.5 py-3 font-medium">任務數</th><th class="px-2.5 py-3 font-medium"></th></tr></thead>
+        <thead><tr class="bg-muted text-secondary"><th class="px-2.5 py-3 font-medium">{{ t('public.project') }}</th><th class="px-2.5 py-3 font-medium">{{ t('public.taskCount') }}</th><th class="px-2.5 py-3 font-medium"></th></tr></thead>
         <tbody>
           <tr v-for="p in loaded && !loadFailed ? projects : []" :key="p.id" class="border-b border-line hover:bg-muted">
-            <td class="px-2.5 py-3">{{ p.name }}</td><td class="px-2.5 py-3">{{ taskCount(p.id) }}</td>
-            <td class="px-2.5 py-3 text-right"><router-link :to="`/work/${p.id}`" class="text-primary hover:underline">開啟</router-link></td>
+            <td class="px-2.5 py-3">{{ p.name }}</td><td class="px-2.5 py-3">{{ formatNumber(taskCount(p.id)) }}</td>
+            <td class="px-2.5 py-3 text-right"><router-link :to="`/work/${p.id}`" class="text-primary hover:underline">{{ t('public.open') }}</router-link></td>
           </tr>
-          <tr v-if="loaded && !loadFailed && projects.length === 0"><td colspan="3" class="px-2.5 py-3 text-disabled">範圍內沒有專案。</td></tr>
+          <tr v-if="loaded && !loadFailed && projects.length === 0"><td colspan="3" class="px-2.5 py-3 text-disabled">{{ t('public.noProjects') }}</td></tr>
         </tbody>
       </table>
     </section>
 
     <section v-if="canTime" class="rounded bg-card p-5 shadow-sm">
-      <h2 class="mb-3 text-[15px] font-semibold">我最近登記的工時</h2>
+      <h2 class="mb-3 text-[15px] font-semibold">{{ t('public.recentTime') }}</h2>
       <table class="w-full text-left text-[13px]">
-        <thead><tr class="bg-muted text-secondary"><th class="px-2.5 py-3 font-medium">日期</th><th class="px-2.5 py-3 font-medium">任務</th><th class="px-2.5 py-3 font-medium">小時</th><th class="px-2.5 py-3 font-medium">說明</th></tr></thead>
+        <thead><tr class="bg-muted text-secondary"><th class="px-2.5 py-3 font-medium">{{ t('public.date') }}</th><th class="px-2.5 py-3 font-medium">{{ t('public.task') }}</th><th class="px-2.5 py-3 font-medium">{{ t('public.hours') }}</th><th class="px-2.5 py-3 font-medium">{{ t('public.description') }}</th></tr></thead>
         <tbody>
-          <tr v-for="e in loaded && !loadFailed ? recent : []" :key="e.id" class="border-b border-line"><td class="px-2.5 py-3">{{ e.date }}</td><td class="px-2.5 py-3">{{ taskName(e.taskId) }}</td><td class="px-2.5 py-3">{{ e.hours }}</td><td class="px-2.5 py-3">{{ e.note }}</td></tr>
-          <tr v-if="loaded && !loadFailed && recent.length === 0"><td colspan="4" class="px-2.5 py-3 text-disabled">還沒有登記工時。到「專案與工時」選一個任務就能登記。</td></tr>
+          <tr v-for="e in loaded && !loadFailed ? recent : []" :key="e.id" class="border-b border-line"><td class="px-2.5 py-3">{{ formatDate(e.date) }}</td><td class="px-2.5 py-3">{{ taskName(e.taskId) }}</td><td class="px-2.5 py-3">{{ formatNumber(e.hours) }}</td><td class="px-2.5 py-3">{{ e.note }}</td></tr>
+          <tr v-if="loaded && !loadFailed && recent.length === 0"><td colspan="4" class="px-2.5 py-3 text-disabled">{{ t('public.noTime') }}</td></tr>
         </tbody>
       </table>
     </section>
 
     <section v-if="admin" class="rounded bg-card p-5 shadow-sm">
-      <h2 class="mb-1 text-[15px] font-semibold">系統管理</h2>
-      <p class="text-secondary">共 {{ admin.users }} 個帳號、{{ admin.roles }} 個角色。管理頁的修改同樣會在下次重置時還原；示範帳號的密碼與你自己的角色不能改。</p>
+      <h2 class="mb-1 text-[15px] font-semibold">{{ t('public.adminTitle') }}</h2>
+      <p class="text-secondary">{{ t('public.adminInfo', { users: formatNumber(admin.users), roles: formatNumber(admin.roles) }) }}</p>
     </section>
   </div>
 </template>

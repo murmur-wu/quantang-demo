@@ -1,13 +1,15 @@
 import { message } from './message'
+import { errorMessage } from '../api/request'
+import { i18n } from '../i18n'
 
 /** 下載後端回傳的檔案 Blob;若後端回傳 JSON(權限不足等錯誤)則顯示錯誤訊息 */
 export async function downloadBlob(filename: string, blob: Blob) {
   if (blob.type.includes('application/json')) {
     try {
       const body = JSON.parse(await blob.text())
-      message(body.msg || '匯出失敗', 'error')
+      message(errorMessage(body), 'error')
     } catch {
-      message('匯出失敗', 'error')
+      message(i18n.global.t('errors.OPERATION_FAILED'), 'error')
     }
     return
   }

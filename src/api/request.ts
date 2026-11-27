@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth'
 import { message } from '../utils/message'
 import { connection } from '../utils/connection'
 import { sessionExpiredKey, strings } from '../strings'
+import { i18n } from '../i18n'
 
 /** 統一 API 封裝：攜帶 cookie、解包回應並處理授權錯誤。 */
 const baseURL = (import.meta.env.VITE_API_BASE || '/api').replace(/\/$/, '')
@@ -40,6 +41,17 @@ export async function ping(): Promise<boolean> {
   }
 }
 
+/**
+ * 有 errorCode 且有翻譯就用翻譯；否則退回後端 msg，再退回 fallback。
+ * contextual 為 true 時（狀態碼已能判斷情境，例如登入 401、寫入 403），舊後端沒有 errorCode 就直接用 fallback 的翻譯，避免非繁中介面顯示繁中 msg。
+ */
+export function errorMessage(body: { errorCode?: string; params?: Record<string, string | number>; msg?: string } | undefined, fallback = 'errors.OPERATION_FAILED', contextual = false): string {
+  const key = body?.errorCode ? `errors.${body.errorCode}` : ''
+  if (key && i18n.global.te(key)) return i18n.global.t(key, body?.params ?? {})
+  if (contextual && !body?.errorCode) return i18n.global.t(fallback)
+  return body?.msg || i18n.global.t(fallback)
+}
+
 instance.interceptors.response.use(
   (res) => {
     connection.offline = false
@@ -56,7 +68,7 @@ instance.interceptors.response.use(
     if (err.response?.status === 401) {
       useAuthStore().logout()
       if (err.config?.url?.split('?')[0].replace(/\/$/, '').endsWith('/auth/login')) {
-        message(strings.loginFailed, 'error')
+        message(errorMessage(err.response?.data, 'errors.AUTH_INVALID_CREDENTIALS', true), 'error')
       } else if (location.pathname !== '/login') {
         sessionStorage.setItem(sessionExpiredKey, '1')
         location.href = '/login'
@@ -73,10 +85,10 @@ instance.interceptors.response.use(
           const current = router.currentRoute.value
           if (current.path !== '/403') router.replace({ path: '/403', query: { from: current.fullPath } })
         })
-      } else message('沒有權限執行此操作', 'error')
+      } else message(errorMessage(err.response?.data, 'errors.FORBIDDEN', true), 'error')
       return Promise.reject(err)
     }
-    message(err.response?.data?.msg || '操作失敗', 'error')
+    message(errorMessage(err.response?.data), 'error')
     return Promise.reject(err)
   },
 )

@@ -4,6 +4,7 @@ import request from './request'
 export interface MenuNode {
   menuId: number
   name: string
+  perms?: string
   path?: string
   component?: string
   menuType: 'M' | 'C' | 'F'

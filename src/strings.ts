@@ -1,16 +1,17 @@
-export const strings = {
-  logout: '登出',
-  themeSettings: '主題設定',
-  infoColor: '資訊色',
-  layoutSettings: '佈局設定',
-  loadingPlaceholder: '—',
-  loading: '資料載入中…',
-  loadFailed: '資料載入失敗，請稍後再試。',
-  loginFailed: '帳號或密碼錯誤',
-  sessionExpired: '工作階段已失效，請重新登入',
-  me: '我',
-  member: (id: number) => `成員 #${id}`,
-  myHours: (count: number) => `我登記的工時（小時，共 ${count} 筆）`,
-}
+import { i18n } from './i18n'
 
+export const strings = {
+  get logout() { return i18n.global.t('common.logout') },
+  get themeSettings() { return i18n.global.t('common.themeSettings') },
+  get infoColor() { return i18n.global.t('common.infoColor') },
+  get layoutSettings() { return i18n.global.t('common.layoutSettings') },
+  loadingPlaceholder: '—',
+  get loading() { return i18n.global.t('common.loading') },
+  get loadFailed() { return i18n.global.t('common.loadFailed') },
+  get loginFailed() { return i18n.global.t('common.loginFailed') },
+  get sessionExpired() { return i18n.global.t('common.sessionExpired') },
+  get me() { return i18n.global.t('common.me') },
+  member: (id: number) => i18n.global.t('common.member', { id }),
+  myHours: (count: number) => i18n.global.t('common.myHours', { count }),
+}
 export const sessionExpiredKey = 'session-expired'
