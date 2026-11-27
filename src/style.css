@@ -68,3 +68,8 @@ body {
   background: var(--body);
   color: var(--t-main);
 }
+
+html[data-locale="zh-TW"] body { font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif; }
+html[data-locale="zh-CN"] body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif; }
+html[data-locale="ja"] body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", sans-serif; }
+html[data-locale="en"] body { font-family: system-ui, sans-serif; }

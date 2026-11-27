@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { getThemeSetting, saveThemeSetting } from '../api'
+import { i18n, type AppLocale } from '../i18n'
 
 export interface ThemeSettings {
+  locale?: AppLocale
   mode: 'light' | 'dark' | 'auto'
   darkSidebar: boolean
   gray: boolean
@@ -72,13 +74,19 @@ export const useThemeStore = defineStore('theme', {
     async loadRemote() {
       try {
         const json = await getThemeSetting()
-        if (json) Object.assign(this.s, { ...defaultTheme, ...JSON.parse(json) })
+        if (json) {
+          const settings = JSON.parse(json)
+          // 示範帳號由多位訪客共用，語言以這台瀏覽器目前的選擇為準，不套用帳號裡存的 locale。
+          delete settings.locale
+          Object.assign(this.s, { ...defaultTheme, ...settings })
+        }
+        this.s.locale = i18n.global.locale.value
       } catch { /* 無設定或解析失敗 → 用預設 */ }
       this.apply()
     },
     /** 重設為預設值(並存到後端) */
     reset() {
-      this.set({ ...defaultTheme })
+      this.set({ ...defaultTheme, locale: this.s.locale ?? i18n.global.locale.value })
     },
     /** 登出時還原預設外觀,避免下一位使用者看到上一位的主題 */
     resetLocal() {

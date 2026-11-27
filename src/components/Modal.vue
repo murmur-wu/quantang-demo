@@ -14,8 +14,8 @@ const emit = defineEmits<{ close: []; confirm: [] }>()
         <slot />
       </div>
       <div class="flex justify-end gap-2 border-t border-line px-5 py-3">
-        <button class="rounded border border-line px-4 py-2 text-sm text-secondary hover:bg-muted" @click="emit('close')">取消</button>
-        <button class="rounded bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover" @click="emit('confirm')">確定</button>
+        <button class="rounded border border-line px-4 py-2 text-sm text-secondary hover:bg-muted" @click="emit('close')">{{ $t('common.cancel') }}</button>
+        <button class="rounded bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover" @click="emit('confirm')">{{ $t('common.confirm') }}</button>
       </div>
     </div>
   </div>

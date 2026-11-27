@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import Modal from './components/Modal.vue'
+import { confirmState, resolveConfirm } from './utils/confirm'
 import { useThemeStore } from './stores/theme'
 import { connection } from './utils/connection'
 import { ping } from './api/request'
@@ -25,9 +27,10 @@ async function retry() {
 
 <template>
   <div v-if="connection.offline" role="alert" class="sticky top-0 z-[9998] flex flex-wrap items-center justify-center gap-3 border-b border-warning bg-[color-mix(in_srgb,var(--warning)_18%,var(--card))] px-4 py-2.5 text-sm text-main">
-    <span><b>展示主機目前離線。</b>後端暫時連不上，請稍後再試；這不是帳號或密碼錯誤。</span>
-    <span v-if="stillOffline" class="text-secondary">仍然連不上，請稍後再試。</span>
-    <button class="rounded bg-primary px-3 py-1 text-white disabled:opacity-60" :disabled="retrying" @click="retry">{{ retrying ? '重試中…' : '重試' }}</button>
+    <span>{{ $t('ui.offline') }}</span>
+    <span v-if="stillOffline" class="text-secondary">{{ $t('ui.stillOffline') }}</span>
+    <button class="rounded bg-primary px-3 py-1 text-white disabled:opacity-60" :disabled="retrying" @click="retry">{{ retrying ? $t('ui.retrying') : $t('ui.retry') }}</button>
   </div>
   <router-view />
+  <Modal :show="confirmState.show" :title="$t('common.confirm')" @close="resolveConfirm(false)" @confirm="resolveConfirm(true)">{{ confirmState.text }}</Modal>
 </template>

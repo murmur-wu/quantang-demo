@@ -3,6 +3,8 @@ import { useAuthStore } from '../stores/auth'
 import type { MenuNode } from '../api'
 import Layout from '../layout/Layout.vue'
 import { connection } from '../utils/connection'
+import { i18n } from '../i18n'
+import { menuLabel } from '../i18n/labels'
 
 /** views 元件對照:後端 component 字串 → 實際模組 */
 const viewModules = import.meta.glob('../views/**/index.vue')
@@ -11,20 +13,20 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     // 公開頁:作品說明首頁與登入頁,不需登入、進入時不呼叫 API
-    { path: '/', name: 'home', component: () => import('../views/home/index.vue'), meta: { public: true } },
-    { path: '/login', name: 'login', component: () => import('../views/login/index.vue'), meta: { public: true } },
+    { path: '/', name: 'home', component: () => import('../views/home/index.vue'), meta: { public: true, titleKey: 'titles.home' } },
+    { path: '/login', name: 'login', component: () => import('../views/login/index.vue'), meta: { public: true, titleKey: 'titles.login' } },
     {
       // 子路由都用絕對路徑,這個 path 只是掛載點,不會出現在網址上
       path: '/_app', name: 'root', component: Layout, redirect: '/dashboard',
       children: [
         // meta.perm:缺少該權限時由下方 guard 導向 /403(後端仍會各自檢查)
-        { path: '/permission-matrix', name: 'permission-matrix', component: () => import('../views/matrix/index.vue'), meta: { title: '權限矩陣', perm: 'biz:permission:matrix' } },
-        { path: '/work/:id', name: 'work-detail', component: () => import('../views/work/index.vue'), meta: { title: '專案詳情', perm: 'biz:project:read' } },
-        { path: '/work', name: 'work', component: () => import('../views/work/index.vue'), meta: { title: '專案與工時', perm: 'biz:project:read' } },
-        { path: '/clients', name: 'clients', component: () => import('../views/clients/index.vue'), meta: { title: '客戶', perm: 'biz:client:read' } },
-        { path: '/403', name: 'forbidden', component: () => import('../views/forbidden/index.vue'), meta: { title: '沒有權限' } },
+        { path: '/permission-matrix', name: 'permission-matrix', component: () => import('../views/matrix/index.vue'), meta: { titleKey: 'titles.matrix', perm: 'biz:permission:matrix' } },
+        { path: '/work/:id', name: 'work-detail', component: () => import('../views/work/index.vue'), meta: { titleKey: 'titles.workDetail', perm: 'biz:project:read' } },
+        { path: '/work', name: 'work', component: () => import('../views/work/index.vue'), meta: { titleKey: 'titles.work', perm: 'biz:project:read' } },
+        { path: '/clients', name: 'clients', component: () => import('../views/clients/index.vue'), meta: { titleKey: 'titles.clients', perm: 'biz:client:read' } },
+        { path: '/403', name: 'forbidden', component: () => import('../views/forbidden/index.vue'), meta: { titleKey: 'titles.forbidden' } },
         // 個人中心:固定路由,不走選單權限
-        { path: '/profile', name: 'profile', component: () => import('../views/profile/index.vue'), meta: { title: '個人中心' } },
+        { path: '/profile', name: 'profile', component: () => import('../views/profile/index.vue'), meta: { titleKey: 'titles.profile' } },
       ],
     },
     // 注意:不可加 catch-all redirect '/',動態路由註冊前會造成無限重導向;
@@ -33,7 +35,7 @@ const router = createRouter({
 })
 
 /** 由後端選單樹產生路由(掛在 Layout 之下) */
-function buildRoutes(menus: MenuNode[], parentPath = '', parentTitle = ''): RouteRecordRaw[] {
+function buildRoutes(menus: MenuNode[], parentPath = '', parentTitle = '', parentPerms = ''): RouteRecordRaw[] {
   const routes: RouteRecordRaw[] = []
   for (const m of menus) {
     const fullPath = m.path ? `${parentPath}/${m.path}` : parentPath
@@ -44,11 +46,11 @@ function buildRoutes(menus: MenuNode[], parentPath = '', parentTitle = ''): Rout
           path: fullPath,
           name: `menu-${m.menuId}`,
           component: loader,
-          meta: { title: m.name, icon: m.icon, parentTitle }, // parentTitle 供麵包屑顯示上層目錄
+          meta: { title: m.name, icon: m.icon, menuPerms: m.perms, parentTitle, parentPath, parentPerms }, // parentTitle 供麵包屑顯示上層目錄
         })
       }
     }
-    if (m.children?.length) routes.push(...buildRoutes(m.children, fullPath, m.name))
+    if (m.children?.length) routes.push(...buildRoutes(m.children, fullPath, m.name, m.perms))
   }
   return routes
 }
@@ -82,5 +84,13 @@ router.beforeEach(async (to) => {
   if (typeof perm === 'string' && !auth.hasPerm(perm)) return { path: '/403', query: { from: to.fullPath }, replace: true }
   return true
 })
+
+function updateTitle() {
+  const meta = router.currentRoute.value.meta
+  const title = typeof meta.titleKey === 'string' ? i18n.global.t(meta.titleKey) : typeof meta.title === 'string' ? menuLabel({ path: router.currentRoute.value.path, perms: typeof meta.menuPerms === 'string' ? meta.menuPerms : undefined, menuName: meta.title }) : i18n.global.t('titles.dashboard')
+  document.title = `${title} | 權糖`
+}
+router.afterEach(updateTitle)
+window.addEventListener('locale-change', updateTitle)
 
 export default router

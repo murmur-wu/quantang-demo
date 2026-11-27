@@ -62,13 +62,13 @@ function onChange() {
   <div>
     <div class="mb-3 flex flex-wrap items-center gap-4 text-[13px] text-secondary">
       <label class="flex cursor-pointer items-center gap-1.5">
-        <input v-model="expandAll" type="checkbox" class="accent-primary" @change="onExpandAll" /> 展開/摺疊
+        <input v-model="expandAll" type="checkbox" class="accent-primary" @change="onExpandAll" /> {{ $t('tree.expandCollapse') }}
       </label>
       <label class="flex cursor-pointer items-center gap-1.5">
-        <input v-model="selectAll" type="checkbox" class="accent-primary" @change="onSelectAll" /> 全選/全不選
+        <input v-model="selectAll" type="checkbox" class="accent-primary" @change="onSelectAll" /> {{ $t('tree.selectAll') }}
       </label>
       <label class="flex cursor-pointer items-center gap-1.5">
-        <input v-model="cascade" type="checkbox" class="accent-primary" /> 父子連動
+        <input v-model="cascade" type="checkbox" class="accent-primary" /> {{ $t('tree.cascade') }}
       </label>
     </div>
     <div class="max-h-[380px] overflow-y-auto rounded border border-line p-2.5">

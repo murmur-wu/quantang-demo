@@ -6,7 +6,7 @@
   <div class="flex min-h-[60vh] items-center justify-center rounded bg-card shadow-sm">
     <div class="text-center">
       <div class="mb-3 text-5xl">🚧</div>
-      <p class="text-lg text-secondary">敬请期待</p>
+      <p class="text-lg text-secondary">{{ $t('ui.comingSoon') }}</p>
     </div>
   </div>
 </template>

@@ -31,8 +31,8 @@ function go(p: number) {
 
 <template>
   <div class="mt-4 flex items-center justify-end gap-1.5 text-[13px] text-secondary">
-    <span class="mr-1">共 {{ total }} 筆</span>
-    <button class="flex h-7 min-w-7 items-center justify-center rounded bg-muted hover:bg-line" @click="go(pageNum - 1)">‹</button>
+    <span class="mr-1">{{ $t('ui.total', { count: total }) }}</span>
+    <button class="flex h-7 min-w-7 items-center justify-center rounded bg-muted hover:bg-line" :aria-label="$t('ui.previous')" @click="go(pageNum - 1)">‹</button>
     <template v-for="(p, i) in pages" :key="i">
       <span v-if="p === '…'" class="px-1">…</span>
       <button
@@ -42,6 +42,6 @@ function go(p: number) {
         @click="go(p)"
       >{{ p }}</button>
     </template>
-    <button class="flex h-7 min-w-7 items-center justify-center rounded bg-muted hover:bg-line" @click="go(pageNum + 1)">›</button>
+    <button class="flex h-7 min-w-7 items-center justify-center rounded bg-muted hover:bg-line" :aria-label="$t('ui.next')" @click="go(pageNum + 1)">›</button>
   </div>
 </template>
